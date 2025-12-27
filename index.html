@@ -63,6 +63,14 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #b45309; 
         }
+        /* 隱藏橫向捲軸但保持功能 (for mobile tabs) */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
     </style>
 </head>
 <body class="bg-[#050810] text-amber-50 font-serif selection:bg-amber-900 selection:text-white overflow-x-hidden min-h-screen">
@@ -72,32 +80,26 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
         
-        // 修正後的 Icon 組件：使用 createElement 解決 API 錯誤
-        const Icon = ({ name, size = 24, className, strokeWidth = 2 }) => {
-            // 確保 lucide 已加載且圖標存在
+        const Icon = ({ name, size = 24, className, strokeWidth = 2, style = {} }) => {
             if (typeof lucide === 'undefined' || !lucide.icons[name]) {
                 return null;
             }
             
             try {
-                // 使用 Lucide 的 createElement 方法生成 SVG DOM 元素
                 const element = lucide.createElement(lucide.icons[name]);
-                
-                // 設定自定義屬性
                 element.setAttribute('width', size);
                 element.setAttribute('height', size);
                 element.setAttribute('stroke-width', strokeWidth);
                 
-                // 處理 class：保留預設 class 並加入傳入的 className
                 const defaultClass = element.getAttribute('class') || '';
                 const finalClass = className ? `${defaultClass} ${className}`.trim() : defaultClass;
                 element.setAttribute('class', finalClass);
 
-                // 將 DOM 元素轉換為 HTML 字串
                 return (
                     <span 
+                        className={className}
                         dangerouslySetInnerHTML={{ __html: element.outerHTML }} 
-                        style={{ display: 'inline-flex', verticalAlign: 'middle', lineHeight: 0 }}
+                        style={{ display: 'inline-flex', verticalAlign: 'middle', lineHeight: 0, ...style }}
                     />
                 );
             } catch (error) {
@@ -123,7 +125,7 @@
                         junior: {
                             logic: '對於初入社會的你，皇帝牌代表「規則」與「導師」。你需要找到一個強而有力的領導者跟隨，學習職場的潛規則與專業架構。現在不是叛逆的時候，而是打穩地基、展現執行力與紀律的時刻。',
                             actions: [
-                                { title: '尋找導師', desc: '觀察公司內最有權威的前輩，模仿他的工作邏輯。' },
+                                { title: '尋找導師', desc: '觀察公司內最有權威的前輩，模仿他的工作方式。' },
                                 { title: '遵守紀律', desc: '準時、負責、回報，這些基本功是你的信任資產。' },
                                 { title: '理解架構', desc: '搞懂公司的組織圖與商業模式，不要只埋頭苦幹。' }
                             ],
@@ -167,11 +169,11 @@
                             note: '良禽擇木而棲。如果這裡的土壤種不出你要的花，換個盆栽並不是逃避，而是生存智慧。'
                         },
                         senior: {
-                            logic: '資深的你可能遇到了職涯瓶頸，感到停滯不前。寶劍六建議採取「戰略性撤退」或「轉移陣地」。這可能意味著外派、轉換跑道，或是轉向遠端工作（Remote Work）與數位遊牧，追求更佳的生活平衡。',
+                            logic: '資深的你可能遇到了職涯瓶頸，感到停滯不前。寶劍六建議採取「戰略性撤退」或「轉移陣地」。這可能意味著嘗試業務工作、外派、轉換跑道，或是轉向遠端工作（Remote Work）與數位遊牧，追求更佳的生活平衡。',
                             actions: [
                                 { title: '尋求外派', desc: '爭取海外或跨部門的機會，物理移動帶來轉機。' },
                                 { title: '優化履歷', desc: '盤點過去成就，包裝成可遷移的技能包。' },
-                                { title: '尋求獵頭', desc: '你需要外部的引路人，主動聯繫獵頭顧問。' }
+                                { title: '尋求獵頭', desc: '你需要外部的引路人，主動聯繫獵頭顧問或親朋好友，可能會有不錯的機會。' }
                             ],
                             note: '轉身比堅持更需要勇氣。你的下一站應該是為了「生活型態」而選，而不僅僅是為了薪水。'
                         },
@@ -207,7 +209,7 @@
                             logic: '工作久了熱情消磨殆盡？這張牌要你重燃火花！2026 非常適合開啟「副業 (Side Hustle)」或是在公司內部啟動一個全新專案。不要滿足於領死薪水，去創造屬於你自己的「從 0 到 1」。',
                             actions: [
                                 { title: '啟動副業', desc: '利用下班時間，將你的專業變成第二收入曲線。' },
-                                { title: '個人品牌', desc: '開始在網路上輸出觀點，建立職場影響力。' },
+                                { title: '個人品牌', desc: '學習個人行銷，業務力將是未來 AI 時代的另一關鍵。' },
                                 { title: '提案開發', desc: '向老闆提出一個能幫公司賺錢的新計畫。' }
                             ],
                             note: '不要讓公司的 Title 定義你。那把心中的火炬，值得你用週末的時間去澆灌，它可能長成你的第二曲線。'
@@ -234,7 +236,7 @@
                         junior: {
                             logic: '錢幣九提醒新人：「先有麵包，再談詩與遠方」。現階段的重點是累積「硬實力」與「第一桶金」。不要急著享受，把薪水投資在學習技能上，讓自己盡快具備「不可取代性」。',
                             actions: [
-                                { title: '儲蓄理財', desc: '養成記帳習慣，儘早開始定期定額投資。' },
+                                { title: '儲蓄理財', desc: '養成儲蓄習慣，並儘早開始投資理財。有時候慢即是快！' },
                                 { title: '技能變現', desc: '思考你的技能是否能直接換錢？提升專業度。' },
                                 { title: '考取證照', desc: '累積行業內的認可證明，增加談薪籌碼。' }
                             ],
@@ -299,7 +301,7 @@
                         transition-all duration-700 ease-out
                     `}
                 >
-                    <div className="absolute inset-0 rounded-t-full rounded-b-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] overflow-hidden bg-[#1e293b] border-[3px] border-[#8B5E3C] group-hover:border-amber-400 group-hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] transition-all z-10">
+                    <div className="absolute inset-0 rounded-t-full rounded-b-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] overflow-hidden bg-[#1e293b] border-[2px] md:border-[3px] border-[#8B5E3C] group-hover:border-amber-400 group-hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] transition-all z-10">
                         {/* 1. Rich Background Texture */}
                         <div className="absolute inset-0 bg-[#0f172a]" />
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,#451a03_0%,#0f172a_60%)] opacity-80" />
@@ -318,31 +320,31 @@
                         {/* 3. Central Motif - The "Sunburst" */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center group-hover:scale-105 transition-transform duration-1000">
                             <div className="relative">
-                                {/* Glowing Halo Back */}
-                                <div className="absolute -inset-16 bg-amber-600/10 rounded-full blur-2xl group-hover:bg-amber-600/20 transition-all duration-700"></div>
+                                {/* Glowing Halo Back - Scaled for mobile */}
+                                <div className="absolute -inset-8 md:-inset-16 bg-amber-600/10 rounded-full blur-xl md:blur-2xl group-hover:bg-amber-600/20 transition-all duration-700"></div>
                                 
-                                {/* Rotating Outer Ring */}
-                                <div className="w-40 h-40 border border-amber-500/20 rounded-full flex items-center justify-center relative animate-[spin_20s_linear_infinite]">
-                                    <div className="absolute top-0 w-2 h-2 bg-amber-600 rounded-full shadow-[0_0_10px_#d97706]"></div>
-                                    <div className="absolute bottom-0 w-2 h-2 bg-amber-600 rounded-full shadow-[0_0_10px_#d97706]"></div>
-                                    <div className="absolute left-0 w-2 h-2 bg-amber-600 rounded-full shadow-[0_0_10px_#d97706]"></div>
-                                    <div className="absolute right-0 w-2 h-2 bg-amber-600 rounded-full shadow-[0_0_10px_#d97706]"></div>
+                                {/* Rotating Outer Ring - Responsive Size */}
+                                <div className="w-20 h-20 md:w-40 md:h-40 border border-amber-500/20 rounded-full flex items-center justify-center relative animate-[spin_20s_linear_infinite]">
+                                    <div className="absolute top-0 w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-600 rounded-full shadow-[0_0_10px_#d97706]"></div>
+                                    <div className="absolute bottom-0 w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-600 rounded-full shadow-[0_0_10px_#d97706]"></div>
+                                    <div className="absolute left-0 w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-600 rounded-full shadow-[0_0_10px_#d97706]"></div>
+                                    <div className="absolute right-0 w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-600 rounded-full shadow-[0_0_10px_#d97706]"></div>
                                 </div>
 
                                 {/* Inner Ornate Layers */}
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-32 h-32 border-[1px] border-amber-500/40 rounded-full flex items-center justify-center bg-[#1e293b]/50 backdrop-blur-sm">
-                                        <div className="w-24 h-24 border border-dashed border-amber-400/30 rounded-full flex items-center justify-center">
-                                            {/* Floral Silhouette Background */}
-                                            <Icon name="Flower" size={80} className="text-amber-900 absolute opacity-40 rotate-12" />
-                                            <Icon name="Flower" size={80} className="text-amber-900 absolute opacity-40 -rotate-12" />
+                                    <div className="w-16 h-16 md:w-32 md:h-32 border-[1px] border-amber-500/40 rounded-full flex items-center justify-center bg-[#1e293b]/50 backdrop-blur-sm">
+                                        <div className="relative w-12 h-12 md:w-24 md:h-24 border border-dashed border-amber-400/30 rounded-full flex items-center justify-center">
+                                            {/* Floral Silhouette Background - Fixed Positioning using Absolute */}
+                                            <Icon name="Flower" className="absolute w-10 h-10 md:w-20 md:h-20 text-amber-900 opacity-40 rotate-12 inset-0 m-auto" />
+                                            <Icon name="Flower" className="absolute w-10 h-10 md:w-20 md:h-20 text-amber-900 opacity-40 -rotate-12 inset-0 m-auto" />
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Center Letter */}
+                                {/* Center Letter - Responsive Font Size */}
                                 <div className="absolute inset-0 flex items-center justify-center z-20">
-                                    <span className="font-serif text-5xl text-amber-100 font-bold italic drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] group-hover:text-white transition-colors">
+                                    <span className="font-serif text-3xl md:text-5xl text-amber-100 font-bold italic drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] group-hover:text-white transition-colors">
                                     {id}
                                     </span>
                                 </div>
@@ -350,12 +352,14 @@
                         </div>
 
                         {/* 4. Top & Bottom Filigree */}
-                        <div className="absolute top-3 left-1/2 -translate-x-1/2 opacity-50">
-                            <div className="w-32 h-16 border-t-2 border-amber-500/20 rounded-t-full"></div>
+                        <div className="absolute top-2 md:top-3 left-1/2 -translate-x-1/2 opacity-50">
+                            <div className="w-16 md:w-32 h-8 md:h-16 border-t-2 border-amber-500/20 rounded-t-full"></div>
                         </div>
-                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-60">
-                            <div className="w-1 h-8 bg-gradient-to-b from-transparent to-amber-500/40 mb-2"></div>
-                            <Icon name="Star" size={12} className="text-amber-600" />
+                        <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-60">
+                            <div className="w-0.5 md:w-1 h-4 md:h-8 bg-gradient-to-b from-transparent to-amber-500/40 mb-1 md:mb-2"></div>
+                            <div className="text-amber-600">
+                                <Icon name="Star" className="w-3 h-3 md:w-4 md:h-4" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -380,12 +384,12 @@
                         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-amber-900/20 to-transparent rounded-bl-[100px] border-l border-b border-amber-900/10"></div>
                     </div>
 
-                    <div className="relative z-10 max-w-5xl mx-auto px-6 py-12 min-h-screen flex flex-col">
+                    <div className="relative z-10 max-w-5xl mx-auto px-6 py-6 md:py-12 min-h-screen flex flex-col">
                         
                         {/* Header */}
-                        <header className="text-center mb-16 relative">
+                        <header className="text-center mb-8 md:mb-16 relative">
                             {/* Erich's Note */}
-                            <div className="inline-block mb-10 p-5 rounded-xl bg-[#1e293b]/70 border border-amber-500/30 backdrop-blur-md shadow-lg max-w-xl mx-auto transform hover:scale-[1.01] transition-transform duration-300 mt-8">
+                            <div className="inline-block mb-6 md:mb-10 p-5 rounded-xl bg-[#1e293b]/70 border border-amber-500/30 backdrop-blur-md shadow-lg max-w-xl mx-auto transform hover:scale-[1.01] transition-transform duration-300 mt-4 md:mt-8">
                                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
                                     <div className="relative -mt-12 shrink-0">
                                         <div className="w-24 h-24 rounded-full border-4 border-[#0f172a] shadow-[0_0_20px_rgba(245,158,11,0.3)] overflow-hidden bg-[#0f172a] relative z-10">
@@ -398,19 +402,19 @@
                                     <div className="pt-2">
                                         <h3 className="text-amber-400 font-bold font-sans text-sm tracking-wider uppercase mb-1">Erich's Note</h3>
                                         <p className="text-amber-100/90 text-sm md:text-base font-sans leading-relaxed tracking-wide">
-                                            您的保險顧問 Erich 這次幫大家準備了 2026 年的大眾占卜，做成網站版方便大家抽牌，試一下吧～
+                                            您的保險顧問 Erich 除了做保險諮詢，其實曾是 10 年經驗的網頁前端和視覺設計師，同時也是塔羅諮詢師。 這次幫大家準備了 2026 年的大眾占卜，設計成網站版方便大家抽牌，試一下吧～
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-center gap-3 mb-6 opacity-80">
+                            <div className="flex items-center justify-center gap-3 mb-4 md:mb-6 opacity-80">
                                 <div className="w-2 h-2 bg-amber-600 rounded-full"></div>
-                                <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-amber-600 to-transparent"></div>
+                                <div className="h-[1px] w-12 md:w-24 bg-gradient-to-r from-transparent via-amber-600 to-transparent"></div>
                                 <div className="w-2 h-2 bg-amber-600 rounded-full"></div>
                             </div>
 
-                            <h1 className="text-4xl md:text-6xl font-bold text-amber-100 mb-3 tracking-wider drop-shadow-2xl" style={{ textShadow: '0 4px 20px rgba(180, 83, 9, 0.5)' }}>
+                            <h1 className="text-3xl md:text-6xl font-bold text-amber-100 mb-3 tracking-wider drop-shadow-2xl" style={{ textShadow: '0 4px 20px rgba(180, 83, 9, 0.5)' }}>
                                 2026 新年工作大運占卜
                             </h1>
                             <div className="flex items-center justify-center gap-2">
@@ -423,29 +427,29 @@
                         {/* Intro View */}
                         {gameState === 'intro' && (
                             <div className="flex-1 flex flex-col items-center animate-fadeIn">
-                                <div className="relative mb-12 max-w-2xl text-center px-8 py-2">
+                                <div className="relative mb-6 md:mb-12 max-w-2xl text-center px-4 md:px-8 py-2">
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-amber-800/50 to-transparent"></div>
                                     <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-amber-800/50 to-transparent"></div>
-                                    <p className="text-xl md:text-2xl leading-relaxed text-amber-100/90 font-serif italic mb-6">
+                                    <p className="text-lg md:text-2xl leading-relaxed text-amber-100/90 font-serif italic mb-4 md:mb-6">
                                         請在心中默念：<br/>
                                         <span className="inline-block mt-4 text-amber-300 font-bold tracking-wider border-b border-amber-800/50 pb-2">”2026 我的工作大運如何？“</span>
                                     </p>
                                     <div className="flex flex-col items-center gap-2 animate-pulse">
                                         <span className="text-amber-500/80 text-sm md:text-base tracking-widest uppercase font-sans">默念後，請憑直覺點選下方一張牌</span>
-                                        <Icon name="ChevronRight" className="rotate-90 text-amber-500" size={20} />
+                                        <Icon name="ChevronDown" className="text-amber-500" size={20} />
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 w-full max-w-5xl px-2">
+                                <div className="grid grid-cols-4 gap-2 md:gap-6 w-full max-w-5xl px-2">
                                     {['A', 'B', 'C', 'D'].map((id) => (
                                         <Card key={id} id={id} onClick={handleCardClick} disabled={false} />
                                     ))}
                                 </div>
 
-                                <div className="text-center mt-16 mb-8 opacity-60 hover:opacity-100 transition-opacity duration-700">
+                                <div className="text-center mt-8 md:mt-16 mb-4 opacity-100 transition-opacity duration-700">
                                     <Icon name="Flower" size={20} className="mx-auto text-amber-500/50 mb-3" />
-                                    <p className="text-amber-200/60 text-xs uppercase tracking-[0.4em] font-serif mb-2">Destiny is a choice</p>
-                                    <p className="text-amber-200/40 text-xs font-serif tracking-[0.2em]">命運是一種選擇</p>
+                                    <p className="text-amber-100 text-xl md:text-sm uppercase tracking-[0.4em] font-serif mb-2 font-bold md:font-normal">Destiny is a choice</p>
+                                    <p className="text-amber-200/80 text-xl md:text-xs font-serif tracking-[0.2em]">命運是一種選擇</p>
                                 </div>
                             </div>
                         )}
@@ -484,12 +488,12 @@
                                     <div className="absolute top-0 left-0 right-0 h-32 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/20 via-transparent to-transparent pointer-events-none"></div>
                                     <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-sm h-[1px] bg-gradient-to-r from-transparent via-amber-700/50 to-transparent"></div>
 
-                                    <div className="relative p-8 md:p-12 lg:p-16">
+                                    <div className="relative p-6 md:p-12 lg:p-16">
                                         {/* Card Display */}
-                                        <div className="flex flex-col items-center text-center mb-10">
-                                            <div className="relative mb-10 group cursor-default">
+                                        <div className="flex flex-col items-center text-center mb-6 md:mb-10">
+                                            <div className="relative mb-6 md:mb-10 group cursor-default">
                                                 <div className="absolute -inset-4 bg-amber-600/20 rounded-t-full rounded-b-2xl blur-xl"></div>
-                                                <div className="relative w-72 aspect-[2/3.5] bg-[#0a0f18] rounded-t-full rounded-b-2xl border-[3px] border-amber-600/40 flex flex-col items-center justify-end overflow-hidden shadow-2xl p-3">
+                                                <div className="relative w-40 md:w-72 aspect-[2/3.5] bg-[#0a0f18] rounded-t-full rounded-b-2xl border-[3px] border-amber-600/40 flex flex-col items-center justify-end overflow-hidden shadow-2xl p-2 md:p-3">
                                                     <div className="absolute top-0 inset-x-0 h-1/3 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/40 via-[#0f172a] to-transparent">
                                                         <div className="absolute top-6 left-1/2 -translate-x-1/2 text-amber-500/30">
                                                             <Icon name="Star" size={24} strokeWidth={1} />
@@ -504,58 +508,61 @@
                                                 </div>
                                             </div>
 
-                                            <h2 className="text-4xl md:text-5xl font-bold text-amber-100 mb-6 font-serif tracking-wide">{tarotData[selectedCard].title}</h2>
-                                            <div className="flex flex-wrap justify-center gap-3">
+                                            <h2 className="text-3xl md:text-5xl font-bold text-amber-100 mb-4 md:mb-6 font-serif tracking-wide">{tarotData[selectedCard].title}</h2>
+                                            <div className="flex flex-wrap justify-center gap-2 md:gap-3">
                                                 {tarotData[selectedCard].keywords.map((kw, idx) => (
-                                                    <span key={idx} className="px-5 py-1.5 border border-amber-800/60 bg-[#1f1510] text-amber-100/90 text-sm font-serif italic rounded-full shadow-lg">✦ {kw}</span>
+                                                    <span key={idx} className="px-3 py-1 md:px-5 md:py-1.5 border border-amber-800/60 bg-[#1f1510] text-amber-100/90 text-xs md:text-sm font-serif italic rounded-full shadow-lg">✦ {kw}</span>
                                                 ))}
                                             </div>
                                         </div>
 
                                         {/* Career Stage Tabs */}
-                                        <div className="flex flex-wrap justify-center gap-3 mb-10 border-b border-amber-900/50 pb-8 px-4">
-                                            {[
-                                                { id: 'junior', label: '初入社會', sub: 'Freshman', icon: 'User' },
-                                                { id: 'senior', label: '資深職人', sub: 'Professional', icon: 'Briefcase' },
-                                                { id: 'leader', label: '管理/創業', sub: 'Leader', icon: 'TrendingUp' }
-                                            ].map((stage) => (
-                                                <button key={stage.id} onClick={() => setCareerStage(stage.id)} 
-                                                    className={`relative px-6 py-3 rounded-xl border transition-all duration-300 flex items-center gap-3 min-w-[140px] ${careerStage === stage.id ? 'bg-amber-900/40 border-amber-500 text-amber-100 shadow-[0_0_20px_rgba(245,158,11,0.15)]' : 'bg-[#0f172a]/50 border-amber-900/30 text-amber-400/50 hover:border-amber-700 hover:text-amber-200/80'}`}>
-                                                    {careerStage === stage.id && <div className="absolute inset-0 border border-amber-400/30 rounded-xl animate-pulse"></div>}
-                                                    <div className={`${careerStage === stage.id ? 'text-amber-400' : 'text-current'}`}>
-                                                        <Icon name={stage.icon} size={16} />
-                                                    </div>
-                                                    <div className="text-left">
-                                                        <span className="block text-sm font-bold tracking-wide">{stage.label}</span>
-                                                        <span className="block text-[10px] uppercase tracking-wider opacity-60 font-sans">{stage.sub}</span>
-                                                    </div>
-                                                </button>
-                                            ))}
+                                        <div className="mb-10">
+                                            <p className="text-center text-amber-400/80 text-sm font-sans mb-4 tracking-wide">請根據您的職涯階段切換建議：</p>
+                                            <div className="flex flex-nowrap overflow-x-auto justify-center gap-2 md:gap-3 border-b border-amber-900/50 pb-6 px-0 md:px-4 no-scrollbar snap-x">
+                                                {[
+                                                    { id: 'junior', label: '初入社會', sub: 'Freshman', icon: 'User' },
+                                                    { id: 'senior', label: '資深職人', sub: 'Professional', icon: 'Briefcase' },
+                                                    { id: 'leader', label: '管理/創業', sub: 'Leader', icon: 'TrendingUp' }
+                                                ].map((stage) => (
+                                                    <button key={stage.id} onClick={() => setCareerStage(stage.id)} 
+                                                        className={`flex-shrink-0 relative px-3 py-2 md:px-6 md:py-3 rounded-xl border transition-all duration-300 flex items-center gap-2 md:gap-3 min-w-[100px] md:min-w-[140px] snap-center ${careerStage === stage.id ? 'bg-amber-900/40 border-amber-500 text-amber-100 shadow-[0_0_20px_rgba(245,158,11,0.15)]' : 'bg-[#0f172a]/50 border-amber-900/30 text-amber-400/50 hover:border-amber-700 hover:text-amber-200/80'}`}>
+                                                        {careerStage === stage.id && <div className="absolute inset-0 border border-amber-400/30 rounded-xl animate-pulse"></div>}
+                                                        <div className={`${careerStage === stage.id ? 'text-amber-400' : 'text-current'}`}>
+                                                            <Icon name={stage.icon} size={16} />
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <span className="block text-xs md:text-sm font-bold tracking-wide">{stage.label}</span>
+                                                            <span className="hidden md:block text-[10px] uppercase tracking-wider opacity-60 font-sans">{stage.sub}</span>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
 
                                         {/* Logic & Actions */}
-                                        <div className="grid gap-16 md:grid-cols-2 relative animate-fadeIn">
+                                        <div className="grid gap-8 md:gap-16 md:grid-cols-2 relative animate-fadeIn">
                                             <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-amber-800/30 to-transparent -translate-x-1/2"></div>
                                             <div>
-                                                <div className="flex items-center gap-3 mb-6">
+                                                <div className="flex items-center gap-3 mb-4 md:mb-6">
                                                     <Icon name="Moon" size={24} className="text-amber-500" />
-                                                    <h3 className="font-bold text-2xl text-amber-100 font-serif tracking-widest uppercase border-b border-amber-800/50 pb-1">The Logic</h3>
+                                                    <h3 className="font-bold text-xl md:text-2xl text-amber-100 font-serif tracking-widest uppercase border-b border-amber-800/50 pb-1">The Logic</h3>
                                                 </div>
-                                                <p className="text-amber-100/80 leading-loose text-justify font-serif text-lg pl-2 border-l-2 border-amber-900/30">
+                                                <p className="text-amber-100/80 leading-loose text-justify font-serif text-base md:text-lg pl-2 border-l-2 border-amber-900/30">
                                                     {tarotData[selectedCard].advice[careerStage].logic}
                                                 </p>
                                             </div>
                                             <div>
-                                                <div className="flex items-center gap-3 mb-6">
+                                                <div className="flex items-center gap-3 mb-4 md:mb-6">
                                                     <Icon name="Sun" size={24} className="text-amber-500" />
-                                                    <h3 className="font-bold text-2xl text-amber-100 font-serif tracking-widest uppercase border-b border-amber-800/50 pb-1">Action</h3>
+                                                    <h3 className="font-bold text-xl md:text-2xl text-amber-100 font-serif tracking-widest uppercase border-b border-amber-800/50 pb-1">Action</h3>
                                                 </div>
-                                                <ul className="space-y-8">
+                                                <ul className="space-y-6 md:space-y-8">
                                                     {tarotData[selectedCard].advice[careerStage].actions.map((item, idx) => (
-                                                        <li key={idx} className="group relative pl-8">
+                                                        <li key={idx} className="group relative pl-6 md:pl-8">
                                                             <div className="absolute left-0 top-1.5 w-2 h-2 bg-amber-700 rotate-45 group-hover:bg-amber-400 group-hover:rotate-90 transition-all duration-300"></div>
-                                                            <strong className="block text-xl text-amber-100 font-serif mb-2">{item.title}</strong>
-                                                            <span className="text-amber-200/60 text-base leading-relaxed font-light">{item.desc}</span>
+                                                            <strong className="block text-lg md:text-xl text-amber-100 font-serif mb-1 md:mb-2">{item.title}</strong>
+                                                            <span className="text-amber-200/60 text-sm md:text-base leading-relaxed font-light">{item.desc}</span>
                                                         </li>
                                                     ))}
                                                 </ul>
@@ -563,23 +570,32 @@
                                         </div>
 
                                         {/* Strategic Note */}
-                                        <div className="mt-16 mx-auto max-w-3xl">
-                                            <div className="bg-[#1a1512] border border-amber-900/50 p-8 md:p-10 relative shadow-2xl rounded-xl">
+                                        <div className="mt-12 md:mt-16 mx-auto max-w-3xl">
+                                            <div className="bg-[#1a1512] border border-amber-900/50 p-6 md:p-10 relative shadow-2xl rounded-xl">
                                                 <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-amber-600/40"></div>
                                                 <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-amber-600/40"></div>
                                                 <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-amber-600/40"></div>
                                                 <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-amber-600/40"></div>
                                                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#0a0f18] px-4 py-1 text-xs text-amber-500/80 uppercase tracking-[0.2em] border border-amber-900/50 rounded-full">Strategic Note</div>
-                                                <p className="text-amber-100/80 font-serif italic text-center text-lg leading-relaxed">"{tarotData[selectedCard].advice[careerStage].note}"</p>
+                                                <p className="text-amber-100/80 font-serif italic text-center text-base md:text-lg leading-relaxed">"{tarotData[selectedCard].advice[careerStage].note}"</p>
                                             </div>
+                                        </div>
+
+                                        {/* Career Chat CTA */}
+                                        <div className="mt-8 text-center">
+                                            <a href="https://www.instagram.com/shockingws" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-amber-300/80 hover:text-amber-100 transition-colors border-b border-amber-300/30 pb-1 hover:border-amber-100">
+                                                <Icon name="Coffee" size={18} />
+                                                <span>如果想談談職涯建議，也歡迎找我聊聊～</span>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Quote Footer */}
-                                <div className="text-center mt-12 mb-20">
+                                <div className="text-center mt-12 mb-6 opacity-100">
                                     <Icon name="Flower" size={20} className="mx-auto text-amber-900/50 mb-4" />
-                                    <p className="text-amber-800/50 text-xs uppercase tracking-[0.4em] font-serif">Destiny is a choice</p>
+                                    <p className="text-amber-100 text-xl md:text-xs uppercase tracking-[0.4em] font-serif mb-2 font-bold md:font-normal">Destiny is a choice</p>
+                                    <p className="text-amber-200/80 text-xl md:text-xs font-serif tracking-[0.2em]">命運是一種選擇</p>
                                 </div>
                             </div>
                         )}
@@ -590,21 +606,21 @@
                             <div className="relative overflow-hidden rounded-2xl border border-amber-700/30 bg-gradient-to-r from-[#1e130c] to-[#0f172a] shadow-2xl group transition-all duration-500 hover:border-amber-500/60">
                                 <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/floral-linen.png')]"></div>
                                 <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-gradient-to-l from-amber-600/10 to-transparent pointer-events-none"></div>
-                                <div className="relative p-8 flex flex-col md:flex-row items-center justify-between gap-8 font-sans">
+                                <div className="relative p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 font-sans">
                                     <div className="text-center md:text-left">
                                         <div className="flex items-center justify-center md:justify-start gap-3 mb-3">
                                             <Icon name="Star" size={12} className="text-amber-500" />
                                             <span className="text-xs font-bold text-amber-500 uppercase tracking-[0.2em]">VIP Access</span>
                                             <Icon name="Star" size={12} className="text-amber-500" />
                                         </div>
-                                        <h3 className="text-2xl md:text-3xl font-bold text-amber-50 mb-2">
+                                        <h3 className="text-xl md:text-3xl font-bold text-amber-50 mb-2">
                                             2026 塔羅與生命靈數 <br/> <span className="text-amber-500">線下諮詢</span>
                                         </h3>
                                         <p className="text-amber-200/60 text-sm max-w-lg leading-relaxed">
                                             我除了是您的風險守護者，更是您未來的策略引路人。加入紙牌的祕密電子報，獲取優先預約權和更多大眾線上占卜。
                                         </p>
                                     </div>
-                                    <a href="https://secret-kards.kit.com/2baefe46f5" target="_blank" rel="noopener noreferrer" className="flex-shrink-0 relative group/btn overflow-hidden px-8 py-3 bg-[#451a03] text-amber-50 font-bold tracking-wider hover:bg-[#5e2d14] transition-all border border-amber-600/30 shadow-lg rounded-full">
+                                    <a href="https://secret-kards.kit.com/2baefe46f5" target="_blank" rel="noopener noreferrer" className="flex-shrink-0 relative group/btn overflow-hidden px-6 py-3 md:px-8 bg-[#451a03] text-amber-50 font-bold tracking-wider hover:bg-[#5e2d14] transition-all border border-amber-600/30 shadow-lg rounded-full text-sm md:text-base">
                                         <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]"></div>
                                         <span className="relative z-10 flex items-center gap-2">
                                             <Icon name="Mail" size={18} />
@@ -618,25 +634,25 @@
                             {/* CTA 2: Insurance */}
                             <div className="relative overflow-hidden rounded-2xl border border-amber-700/30 bg-gradient-to-r from-[#0f172a] to-[#1e130c] shadow-2xl group transition-all duration-500 hover:border-amber-500/60">
                                 <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                                <div className="relative p-8 flex flex-col md:flex-row items-center justify-between gap-8 font-sans">
+                                <div className="relative p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 font-sans">
                                     <div className="text-center md:text-left">
                                         <div className="flex items-center justify-center md:justify-start gap-3 mb-3">
                                             <Icon name="Shield" size={12} className="text-amber-500" />
                                             <span className="text-xs font-bold text-amber-500 uppercase tracking-[0.2em]">Risk Management</span>
                                             <Icon name="Shield" size={12} className="text-amber-500" />
                                         </div>
-                                        <h3 className="text-2xl md:text-3xl font-bold text-amber-50 mb-2">
-                                            我還不是您的風險守護者？
+                                        <h3 className="text-xl md:text-3xl font-bold text-amber-50 mb-2">
+                                            您有風險守護者嗎？
                                         </h3>
                                         <p className="text-amber-200/60 text-sm max-w-lg leading-relaxed">
-                                            讓盈哲保身成為您的全方位保險顧問。我們不只賣保險，更為您建構最堅實的人生防護網。
+                                            我們不只了解保險，還能協助您創富守富，為您建構最堅實的人生防護網。「盈哲保身」會是您的最好選擇。
                                         </p>
                                     </div>
-                                    <a href="https://erichlin2.notion.site/?source=copy_link" target="_blank" rel="noopener noreferrer" className="flex-shrink-0 relative group/btn overflow-hidden px-8 py-3 bg-[#1e293b] text-amber-50 font-bold tracking-wider hover:bg-[#334155] transition-all border border-amber-600/30 shadow-lg rounded-full">
+                                    <a href="https://erichlin2.notion.site/?source=copy_link" target="_blank" rel="noopener noreferrer" className="flex-shrink-0 relative group/btn overflow-hidden px-6 py-3 md:px-8 bg-[#1e293b] text-amber-50 font-bold tracking-wider hover:bg-[#334155] transition-all border border-amber-600/30 shadow-lg rounded-full text-sm md:text-base">
                                         <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]"></div>
                                         <span className="relative z-10 flex items-center gap-2">
                                             <Icon name="ExternalLink" size={18} />
-                                            知道我們在做什麼
+                                            盈哲保身的服務範圍
                                             <Icon name="ChevronRight" size={18} className="group-hover/btn:translate-x-1 transition-transform" />
                                         </span>
                                     </a>
@@ -647,18 +663,18 @@
                                 <p className="text-[10px] md:text-xs text-amber-100/50 font-sans tracking-widest">*大眾占卜僅供參考娛樂用，請依個人意志理性判斷</p>
                             </div>
 
-                            <div className="flex justify-center items-center gap-6 mt-8 mb-4 flex-wrap">
+                            <div className="flex justify-center items-center gap-4 md:gap-6 mt-8 mb-4 flex-wrap">
                                 <a href="https://erichlin2.notion.site/?source=copy_link" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity transform hover:scale-110 duration-300">
-                                    <img src="https://github.com/shockingws/enc/blob/main/EnC_Logo.PNG?raw=true" alt="EnC Logo" className="w-[60px] h-[60px] object-cover rounded-full drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
+                                    <img src="https://github.com/shockingws/enc/blob/main/EnC_Logo.PNG?raw=true" alt="EnC Logo" className="w-[50px] h-[50px] md:w-[60px] md:h-[60px] object-cover rounded-full drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
                                 </a>
                                 <a href="https://www.instagram.com/octopodacreative/" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity transform hover:scale-110 duration-300">
-                                    <img src="https://github.com/shockingws/enc/blob/main/%E5%85%AB%E8%85%95%E7%9B%AElogo.png?raw=true" alt="Octopoda Creative" className="w-[60px] h-[60px] object-cover rounded-full drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
+                                    <img src="https://github.com/shockingws/enc/blob/main/%E5%85%AB%E8%85%95%E7%9B%AElogo.png?raw=true" alt="Octopoda Creative" className="w-[50px] h-[50px] md:w-[60px] md:h-[60px] object-cover rounded-full drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
                                 </a>
                                 <a href="https://www.instagram.com/shockingws" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity transform hover:scale-110 duration-300">
-                                    <img src="https://github.com/shockingws/enc/blob/main/%E4%B8%8D%E8%AA%8D%E7%9C%9F%E5%B0%B1%E8%BC%B8%E4%BA%86logo.png?raw=true" alt="ShockingWS" className="w-[60px] h-[60px] object-cover rounded-full drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
+                                    <img src="https://github.com/shockingws/enc/blob/main/%E4%B8%8D%E8%AA%8D%E7%9C%9F%E5%B0%B1%E8%BC%B8%E4%BA%86logo.png?raw=true" alt="ShockingWS" className="w-[50px] h-[50px] md:w-[60px] md:h-[60px] object-cover rounded-full drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
                                 </a>
                                 <a href="https://www.instagram.com/secret_kards/" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity transform hover:scale-110 duration-300">
-                                    <img src="https://github.com/shockingws/enc/blob/main/secretKards.jpg?raw=true" alt="Secret Kards" className="w-[60px] h-[60px] object-cover rounded-full drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
+                                    <img src="https://github.com/shockingws/enc/blob/main/secretKards.jpg?raw=true" alt="Secret Kards" className="w-[50px] h-[50px] md:w-[60px] md:h-[60px] object-cover rounded-full drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
                                 </a>
                             </div>
                         </div>
