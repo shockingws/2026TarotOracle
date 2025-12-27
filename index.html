@@ -72,52 +72,41 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
         
-        // 由於在 HTML 中使用 Lucide，我們需要創建簡單的包裝組件或直接使用 lucide.icons
-        // 這裡我們定義一個通用的 Icon 組件來使用 Lucide 全局變量
+        // 修正後的 Icon 組件：使用 createElement 解決 API 錯誤
         const Icon = ({ name, size = 24, className, strokeWidth = 2 }) => {
-            const iconRef = React.useRef(null);
+            // 確保 lucide 已加載且圖標存在
+            if (typeof lucide === 'undefined' || !lucide.icons[name]) {
+                return null;
+            }
+            
+            try {
+                // 使用 Lucide 的 createElement 方法生成 SVG DOM 元素
+                const element = lucide.createElement(lucide.icons[name]);
+                
+                // 設定自定義屬性
+                element.setAttribute('width', size);
+                element.setAttribute('height', size);
+                element.setAttribute('stroke-width', strokeWidth);
+                
+                // 處理 class：保留預設 class 並加入傳入的 className
+                const defaultClass = element.getAttribute('class') || '';
+                const finalClass = className ? `${defaultClass} ${className}`.trim() : defaultClass;
+                element.setAttribute('class', finalClass);
 
-            React.useEffect(() => {
-                if (iconRef.current) {
-                    const iconElement = document.createElement('i');
-                    // 清空之前的內容
-                    iconRef.current.innerHTML = '';
-                    iconRef.current.appendChild(iconElement);
-                    
-                    // 使用 Lucide API 創建圖標
-                    lucide.createIcons({
-                        icons: { [name]: lucide.icons[name] },
-                        attrs: {
-                            class: className,
-                            width: size,
-                            height: size,
-                            'stroke-width': strokeWidth,
-                            stroke: 'currentColor' // 確保顏色跟隨 text-class
-                        },
-                        nameAttr: 'data-lucide',
-                        element: iconElement
-                    });
-                    
-                    // Lucide createIcons 會替換 i 標籤，我們需要把替換後的 SVG 拿出來或者直接讓它運作
-                    // 更簡單的方法是直接渲染 SVG 字符串，但 Lucide UMD 比較適合這樣用：
-                }
-            }, [name, size, className, strokeWidth]);
-
-            // 在 React 中使用 Lucide UMD 最穩定的方式其實是直接映射 SVG
-            // 為了確保穩定性，這裡我們手動定義用到的圖標，模擬 React 組件
-            // 這樣可以避免 useEffect 的閃爍和複雜性
-            return <i data-lucide={name} className={className} width={size} height={size} strokeWidth={strokeWidth}></i>;
-        };
-
-        // 為了讓圖標能被 React 正確渲染，我們需要在組件掛載後呼叫 lucide.createIcons
-        const useLucide = () => {
-            useEffect(() => {
-                lucide.createIcons();
-            });
+                // 將 DOM 元素轉換為 HTML 字串
+                return (
+                    <span 
+                        dangerouslySetInnerHTML={{ __html: element.outerHTML }} 
+                        style={{ display: 'inline-flex', verticalAlign: 'middle', lineHeight: 0 }}
+                    />
+                );
+            } catch (error) {
+                console.error(`Icon render error for ${name}:`, error);
+                return null;
+            }
         };
 
         const TarotApp = () => {
-            useLucide(); // 每次渲染後更新圖標
             const [gameState, setGameState] = useState('intro'); // intro, shuffling, result
             const [selectedCard, setSelectedCard] = useState(null);
             const [careerStage, setCareerStage] = useState('senior'); // junior, senior, leader
